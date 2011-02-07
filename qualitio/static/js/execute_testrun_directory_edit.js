@@ -18,12 +18,12 @@ function show_response(response, statusText, xhr, $form)  {
     hash.node = response.data.current_id; // for new created objects go to details view 
     hash.view = "details" 
     hash.update();
-    $('#application-tree').jstree('refresh', "#"+response.data.parent_id+"_testcasedirectory", response.data);
-    
+    $('#application-tree').jstree('refresh', "#"+response.data.parent_id+"_testrundirectory", response.data);
+
     $('#application-tree').bind("refresh.jstree", function (event, data) {
-      $("#application-tree").jstree("open_node", "#"+data.args[1].parent_id+"_testcasedirectory", function() {
-        $("#application-tree").jstree("select_node", "#"+data.args[1].current_id+"_testcasedirectory");
-        $("#application-tree").jstree("deselect_node", "#"+data.args[1].parent_id+"_testcasedirectory");
+      $("#application-tree").jstree("open_node", "#"+data.args[1].parent_id+"_testrundirectory", function() {
+        $("#application-tree").jstree("select_node", "#"+data.args[1].current_id+"_testrundirectory");
+        $("#application-tree").jstree("deselect_node", "#"+data.args[1].parent_id+"_testrundirectory");
       });
     });
   }
@@ -35,9 +35,8 @@ function clear_errors(arr, $form, options) {
 }
 
 $(function() {
-  $('#testcasedirectory_form').ajaxForm({ 
+  $('#testrundirectory_form').ajaxForm({ 
     success: show_response,
     beforeSubmit: clear_errors
   });
 });
-

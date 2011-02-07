@@ -1,18 +1,21 @@
+{% load application_view_menu %}
 <div id="application-view-header">
   <h1>requirement: {{ requirement.name }}</h1>
 </div>
 
-<div id="application-view-menu">
-  <span class="active">details</span>
-  <a href="#requirement/{{ requirement.pk }}/edit/">edit</a>
-  <a href="#requirement/{{ requirement.pk }}/testcases/">test cases</a>
-</div>
+{% application_view_menu requirement "details" %}
 
 <div class="application-view-content">
-  <div class="text-bullet"><b>full name:</b> {{ requirement.path }}{{ requirement.name }}</div>
-  <div class="text-bullet"><b>path:</b> {{ requirement.path }}</div>
+  <div class="text-bullet">
+    <span class="name">full name:</span>
+    <span class="value">{{ requirement.path }}{{ requirement.name }}</span>
+  </div>
+  <div class="text-bullet">
+    <span class="name">directory:</span>
+    <span class="value"> {{ requirement.path }}</span>
   <div class="text-bullet" style="text-align:justify">
-    <b>description:</b><br/> {{ requirement.description|linebreaksbr  }}
+    <span class="name">description:</span>
+    <span class="value-block">{{ requirement.description|default:"<i>not set</i>"|linebreaksbr }}</span>
   </div>
   
   <h2>sub-requirements</h2>
@@ -60,9 +63,9 @@
         {% for testcase in testcases %}
         <tr>
           <td><img src="{{ MEDIA_URL }}images/testcase_icon_small.png"></td>
-          <td><a href="#">{{ testcase.id }}</a></td>
-          <td><a href="#">{{ testcase.path }}</a></td>
-          <td><a href="#">{{ testcase.name }}</a></td>
+          <td><a href="/store/#testcase/{{ testcase.id }}/details/">{{ testcase.id }}</a></td>
+          <td><a href="/store/#testcasedirectory/{{ testcase.parent.id}}/details/">{{ testcase.path }}</a></td>
+          <td><a href="/store/#testcase/{{ testcase.id }}/details/">{{ testcase.name }}</a></td>
         </tr>
         {% endfor %}
       </tbody>
@@ -129,6 +132,6 @@
 
 <div id="application-view-footer" class="grid_16 clearfix">
   <div class="prefix_8 grid_8 right">
-    <a href="#requirement/{{ requirement.pk }}/new/" class="button">new requirement</a>
+    <a href="#requirement/{{ requirement.pk }}/new/" class="button">create requirement</a>
   </div>
 </div>

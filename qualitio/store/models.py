@@ -1,30 +1,40 @@
 from django.db import models
-from qualitio.core import models as core
+from qualitio import core
 
-class TestCaseDirectory(core.BaseDirectoryModel):
-    pass
-
-
-class TestCase(core.BasePathModel):
-    parent = models.ForeignKey('TestCaseDirectory', null=True, blank=True)
+class TestCaseBase(core.BasePathModel):
     requirement = models.ForeignKey('requirements.Requirement', null=True, blank=True)
-    
-    name = models.CharField(max_length=512)
+
     description = models.TextField(blank=True)
     precondition = models.TextField(blank=True)
-    
-    def __unicode__(self):
-        return self.name
+
+    class Meta:
+        abstract = True
 
 
-class TestCaseStep(core.BaseModel):
-    testcase = models.ForeignKey('TestCase')
+class TestCaseStepBase(core.BaseModel):
     description = models.TextField()
     expected = models.TextField(blank=True)
     sequence = models.PositiveIntegerField(null=True, default=0)
-    
+
+    class Meta:
+        abstract = True
+
+
+class TestCaseDirectory(core.BaseDirectoryModel):
+    description = models.TextField(blank=True)
+
+
+class TestCase(TestCaseBase):
+    parent = models.ForeignKey('TestCaseDirectory', null=True,
+                               blank=True, related_name="subchildren")
+
+
+class TestCaseStep(TestCaseStepBase):
+    testcase = models.ForeignKey('TestCase')
+
     class Meta:
         ordering = ['sequence']
+
 
 class Attachment(core.BaseModel):
     testcase = models.ForeignKey('TestCase')

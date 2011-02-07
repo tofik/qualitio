@@ -1,38 +1,51 @@
 from django.db import models
-from mptt.models import MPTTModel
+from qualitio import core
+from qualitio import store
 
-class TestRunDirectory(MPTTModel):
-    parent = models.ForeignKey('self', null=True, blank=True)
 
-    name = models.CharField(max_length=512)
+class TestRunDirectory(core.BaseDirectoryModel):
     description = models.TextField(blank=True)
 
-    def get_absolute_url(self):
-        return "/execute/testrun/" % self.id
 
-    def get_path(self):
-        if self.get_ancestors():
-            return "/%s/" % "/".join(map(lambda x: x.name, self.get_ancestors()))
-        return "/"
+class TestRun(core.BasePathModel):
+    parent = models.ForeignKey("TestRunDirectory", related_name="subchildren")
+
+    notes = models.TextField(blank=True)
+
+
+class TestCaseRun(store.TestCaseBase):
+    parent = models.ForeignKey("TestRun", null=True, blank=True, related_name="subchildren")
+    status = models.ForeignKey("TestCaseRunStatus")
+    bugs = models.ManyToManyField("Bug")
+
+    @staticmethod
+    def run_testcase(testcase):
+        pass
+
+
+class TestCaseStepRun(store.TestCaseStepBase):
+    testcaserun = models.ForeignKey('TestCaseRun')
+
+    class Meta:
+        ordering = ['sequence']
+
+
+class TestCaseRunStatus(core.BaseModel):
+    name = models.CharField(max_length=512)
+    color = models.CharField(max_length=7, blank=True)
 
     def __unicode__(self):
-        return '%s%s' % (self.get_path(),self.name)
+        return self.name
 
 
-class TestRun(models.Model):
-    directory = models.ForeignKey('TestRunDirectory')
+class Bug(core.BaseModel):
+    id = models.CharField(primary_key=True, max_length=512)
+    url = models.URLField(blank=True, verify_exists=False)
+    name = models.CharField(max_length=512, blank=True)
+    status = models.CharField(max_length=128, blank=True)
+    resolution = models.CharField(max_length=128, blank=True)
 
-    name = models.CharField(max_length=512)
-
-    def get_path(self):
-        return "%s%s/" % (self.directory.get_path(),
-                         self.directory.name)
-
-class TestCaseRun(models.Model):
-    name = models.CharField(max_length=512)
-    testrun = models.ForeignKey('TestRun')
+    def __unicode__(self):
+        return "#%s: %s" % (self.id, self.name)
 
 
-class Status(models.Model):
-    name = models.CharField(max_length=512)
-    color = models.CharField(max_length=512, blank=True)
