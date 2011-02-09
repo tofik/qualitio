@@ -1,4 +1,5 @@
 from django.db import models
+
 from qualitio import core
 from qualitio import store
 
@@ -8,26 +9,35 @@ class TestRunDirectory(core.BaseDirectoryModel):
 
 
 class TestRun(core.BasePathModel):
-    parent = models.ForeignKey("TestRunDirectory", related_name="subchildren")
-
     notes = models.TextField(blank=True)
+
+    class Meta(core.BasePathModel.Meta):
+        parent_class = 'TestRunDirectory'
 
 
 class TestCaseRun(store.TestCaseBase):
-    parent = models.ForeignKey("TestRun", null=True, blank=True, related_name="subchildren")
-    status = models.ForeignKey("TestCaseRunStatus")
+    status = models.ForeignKey("TestCaseRunStatus", default=0)
     bugs = models.ManyToManyField("Bug")
 
-    @staticmethod
-    def run_testcase(testcase):
-        pass
+    class Meta(store.TestCaseBase.Meta):
+        parent_class = 'TestRun'
+
+    @classmethod
+    def run(cls, test_case, test_run):
+        test_case_run = TestCaseRun.objects.create(name=test_case.name,
+                                                   description=test_case.description,
+                                                   precondition=test_case.precondition,
+                                                   parent=test_run)
+
+        for test_case_step in test_case.steps.all():
+            test_case_run.steps.create(description=test_case_step.description,
+                                       expected=test_case_step.expected,
+                                       sequence=test_case_step.sequence)
+        return test_case_run
 
 
 class TestCaseStepRun(store.TestCaseStepBase):
-    testcaserun = models.ForeignKey('TestCaseRun')
-
-    class Meta:
-        ordering = ['sequence']
+    testcaserun = models.ForeignKey('TestCaseRun', related_name="steps")
 
 
 class TestCaseRunStatus(core.BaseModel):

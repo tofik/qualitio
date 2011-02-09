@@ -7,7 +7,7 @@ class TestCaseBase(core.BasePathModel):
     description = models.TextField(blank=True)
     precondition = models.TextField(blank=True)
 
-    class Meta:
+    class Meta(core.BasePathModel.Meta):
         abstract = True
 
 
@@ -16,8 +16,9 @@ class TestCaseStepBase(core.BaseModel):
     expected = models.TextField(blank=True)
     sequence = models.PositiveIntegerField(null=True, default=0)
 
-    class Meta:
+    class Meta(core.BaseModel.Meta):
         abstract = True
+        ordering = ['sequence']
 
 
 class TestCaseDirectory(core.BaseDirectoryModel):
@@ -25,15 +26,12 @@ class TestCaseDirectory(core.BaseDirectoryModel):
 
 
 class TestCase(TestCaseBase):
-    parent = models.ForeignKey('TestCaseDirectory', null=True,
-                               blank=True, related_name="subchildren")
+    class Meta(TestCaseBase.Meta):
+        parent_class = 'TestCaseDirectory'
 
 
 class TestCaseStep(TestCaseStepBase):
-    testcase = models.ForeignKey('TestCase')
-
-    class Meta:
-        ordering = ['sequence']
+    testcase = models.ForeignKey('TestCase', related_name="steps")
 
 
 class Attachment(core.BaseModel):
